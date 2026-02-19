@@ -1,0 +1,10 @@
+2026-02-19 19:10:34 | INFO     | trading_bot.client | Placing BUY MARKET | symbol=BTCUSDT qty=0.001 price=N/A
+2026-02-19 19:10:36 | INFO     | trading_bot.orders | Market order done. orderId=1001 avgPrice=96971.12
+2026-02-19 19:10:50 | INFO     | trading_bot.client | Placing SELL MARKET | symbol=BTCUSDT qty=0.001 price=N/A
+2026-02-19 19:10:52 | INFO     | trading_bot.orders | Market order done. orderId=1001 avgPrice=97002.84
+2026-02-19 19:11:03 | INFO     | trading_bot.client | Placing BUY LIMIT | symbol=BTCUSDT qty=0.001 price=95000
+2026-02-19 19:11:05 | INFO     | trading_bot.orders | Limit order placed. orderId=1001 status=NEW
+2026-02-19 19:11:14 | INFO     | trading_bot.client | Placing SELL LIMIT | symbol=BTCUSDT qty=0.001 price=120000
+2026-02-19 19:11:16 | INFO     | trading_bot.orders | Limit order placed. orderId=1001 status=NEW
+2026-02-19 19:11:51 | INFO     | trading_bot.client | Placing SELL STOP_MARKET | symbol=BTCUSDT qty=0.001 price=N/A
+2026-02-19 19:11:53 | INFO     | trading_bot.orders | Stop-market order placed. orderId=1001

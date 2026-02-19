@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trading Bot</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 6px;
+      color: #f0b90b;
+    }
+
+    .subtitle {
+      color: #718096;
+      margin-bottom: 40px;
+      font-size: 14px;
+    }
+
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3748;
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      margin-bottom: 30px;
+    }
+
+    .card h2 {
+      font-size: 16px;
+      color: #a0aec0;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #a0aec0;
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 14px;
+      background: #2d3748;
+      border: 1px solid #4a5568;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 15px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: #f0b90b;
+    }
+
+    .side-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .side-btn {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #4a5568;
+      border-radius: 8px;
+      background: transparent;
+      color: #a0aec0;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .side-btn.active-buy  { border-color: #48bb78; background: #1a2e22; color: #48bb78; }
+    .side-btn.active-sell { border-color: #fc8181; background: #2e1a1a; color: #fc8181; }
+
+    #price-group, #stop-price-group { display: none; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: #f0b90b;
+      color: #1a1d27;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.2s;
+    }
+
+    .submit-btn:hover   { opacity: 0.9; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .result-box {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .result-box.success { background: #1a2e22; border: 1px solid #48bb78; }
+    .result-box.error   { background: #2e1a1a; border: 1px solid #fc8181; }
+
+    .result-box .label  { color: #718096; font-size: 12px; }
+    .result-box .value  { color: #e2e8f0; font-weight: 600; }
+
+    /* Order History */
+    .history-card {
+      background: #1a1d27;
+      border: 1px solid #2d3748;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .history-card h2 {
+      font-size: 16px;
+      color: #a0aec0;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .order-item {
+      background: #2d3748;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .order-item .tag {
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .tag.BUY    { background: #1a2e22; color: #48bb78; }
+    .tag.SELL   { background: #2e1a1a; color: #fc8181; }
+    .tag.FILLED { background: #1a2535; color: #63b3ed; }
+    .tag.NEW    { background: #2a2519; color: #f0b90b; }
+
+    .empty { color: #4a5568; text-align: center; padding: 20px; font-size: 14px; }
+
+    .refresh-btn {
+      background: none;
+      border: 1px solid #4a5568;
+      color: #a0aec0;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      float: right;
+      margin-top: -4px;
+    }
+
+    .refresh-btn:hover { border-color: #f0b90b; color: #f0b90b; }
+  </style>
+</head>
+<body>
+
+  <h1>⚡ Trading Bot</h1>
+  <p class="subtitle">Mock Exchange — Binance Futures Style</p>
+
+  <!-- Order Form -->
+  <div class="card">
+    <h2>Place Order</h2>
+
+    <div class="form-group">
+      <label>Symbol</label>
+      <select id="symbol">
+        <option>BTCUSDT</option>
+        <option>ETHUSDT</option>
+        <option>SOLUSDT</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Side</label>
+      <div class="side-buttons">
+        <button class="side-btn active-buy" onclick="setSide('BUY')">BUY</button>
+        <button class="side-btn" onclick="setSide('SELL')">SELL</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Order Type</label>
+      <select id="type" onchange="onTypeChange()">
+        <option value="MARKET">MARKET</option>
+        <option value="LIMIT">LIMIT</option>
+        <option value="STOP_MARKET">STOP MARKET</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Quantity</label>
+      <input type="number" id="quantity" placeholder="e.g. 0.001" step="0.001" min="0"/>
+    </div>
+
+    <div class="form-group" id="price-group">
+      <label>Limit Price (USDT)</label>
+      <input type="number" id="price" placeholder="e.g. 95000" step="1" min="0"/>
+    </div>
+
+    <div class="form-group" id="stop-price-group">
+      <label>Stop Price (USDT)</label>
+      <input type="number" id="stopPrice" placeholder="e.g. 58000" step="1" min="0"/>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="placeOrder()">
+      Place Order
+    </button>
+
+    <div class="result-box" id="resultBox"></div>
+  </div>
+
+  <!-- Order History -->
+  <div class="history-card">
+    <h2>
+      Order History
+      <button class="refresh-btn" onclick="loadHistory()">↻ Refresh</button>
+    </h2>
+    <div id="historyList"><p class="empty">No orders yet.</p></div>
+  </div>
+
+  <script>
+    let selectedSide = "BUY";
+
+    function setSide(side) {
+      selectedSide = side;
+      document.querySelectorAll(".side-btn").forEach(b => {
+        b.classList.remove("active-buy", "active-sell");
+      });
+      const btns = document.querySelectorAll(".side-btn");
+      if (side === "BUY")  btns[0].classList.add("active-buy");
+      if (side === "SELL") btns[1].classList.add("active-sell");
+    }
+
+    function onTypeChange() {
+      const type = document.getElementById("type").value;
+      document.getElementById("price-group").style.display =
+        type === "LIMIT" ? "block" : "none";
+      document.getElementById("stop-price-group").style.display =
+        type === "STOP_MARKET" ? "block" : "none";
+    }
+
+    async function placeOrder() {
+      const btn = document.getElementById("submitBtn");
+      const resultBox = document.getElementById("resultBox");
+
+      const payload = {
+        symbol:   document.getElementById("symbol").value,
+        side:     selectedSide,
+        type:     document.getElementById("type").value,
+        quantity: document.getElementById("quantity").value,
+        price:    document.getElementById("price").value || null,
+        stopPrice: document.getElementById("stopPrice").value || null,
+      };
+
+      if (!payload.quantity) {
+        showResult(false, null, "Please enter a quantity.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Placing...";
+
+      try {
+        const resp = await fetch("/api/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await resp.json();
+
+        if (data.success) {
+          showResult(true, data.order, null);
+          loadHistory();
+        } else {
+          showResult(false, null, data.error);
+        }
+
+      } catch (err) {
+        showResult(false, null, "Network error: " + err.message);
+      }
+
+      btn.disabled = false;
+      btn.textContent = "Place Order";
+    }
+
+    function showResult(success, order, errorMsg) {
+      const box = document.getElementById("resultBox");
+      box.style.display = "block";
+
+      if (success) {
+        box.className = "result-box success";
+        box.innerHTML = `
+          <div><span class="label">Status </span><span class="value">${order.status}</span></div>
+          <div><span class="label">Order ID </span><span class="value">${order.orderId}</span></div>
+          <div><span class="label">Symbol </span><span class="value">${order.symbol}</span></div>
+          <div><span class="label">Side </span><span class="value">${order.side}</span></div>
+          <div><span class="label">Qty </span><span class="value">${order.origQty}</span></div>
+          ${order.avgPrice && order.avgPrice !== "0" ? `<div><span class="label">Avg Price </span><span class="value">$${order.avgPrice}</span></div>` : ""}
+          ${order.price && order.price !== "0" ? `<div><span class="label">Limit Price </span><span class="value">$${order.price}</span></div>` : ""}
+          ✅ Order placed successfully!
+        `;
+      } else {
+        box.className = "result-box error";
+        box.innerHTML = `❌ ${errorMsg}`;
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const resp = await fetch("/api/orders");
+        const orders = await resp.json();
+        const list = document.getElementById("historyList");
+
+        if (orders.length === 0) {
+          list.innerHTML = '<p class="empty">No orders yet.</p>';
+          return;
+        }
+
+        list.innerHTML = orders.reverse().map(o => `
+          <div class="order-item">
+            <div>
+              <span class="tag ${o.side}">${o.side}</span>
